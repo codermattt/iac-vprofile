@@ -14,10 +14,10 @@ on:
 
 env:
  # Credentials for deployment to AWS
- AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+ AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}         # stored in GitHub secrets
  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
  # S3 bucket for the Terraform state
- BUCKET_TF_STATE: ${{ secrets.BUCKET_TF_STATE}}
+ BUCKET_TF_STATE: ${{ secrets.BUCKET_TF_STATE }}
  AWS_REGION: us-east-1
  EKS_CLUSTER: matty-eks
 
@@ -59,3 +59,25 @@ jobs:
        - name: Terraform plan status
          if: steps.plan.outcome == 'failure'       # built in variable for step outcome, kils container if plan fails
          run: exit 1     
+       
+       - name: Terraform apply
+         id: apply
+         run: terraform apply -no-color -input=false -auto-approve planfile
+       
+       - name: configure AWS Credentials
+         uses: aws-actions/configure-aws-credentials@v3
+         with: 
+           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+           aws-region: ${{ env.AWS_REGION }}
+       
+       - name: Get kubeconfig file
+         id: getconfig
+         if: steps.apply.outcome == 'success'
+         run: 
+           aws eks update-kubeconfig --name ${{EKS_CLUSTER}} --region ${{AWS_REGION}}
+
+       - name: install ingress controller 
+         if: steps.apply.outcome == 'success' && steps.getconfig.outcome == 'success'
+         run:
+           kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/aws/deploy.yaml
