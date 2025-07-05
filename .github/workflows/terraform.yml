@@ -81,3 +81,5 @@ jobs:
          if: steps.apply.outcome == 'success' && steps.getconfig.outcome == 'success'
          run:
            kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/aws/deploy.yaml
+
+      ###
