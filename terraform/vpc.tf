@@ -23,4 +23,6 @@ module "vpc" {
     "kubernetes.io/cluster/${local.cluster_name}" = "shared"
     "kubernetes.io/role/internal-elb"             = 1
   }
+
+  # These say -> subnets (public and private) belong to this EKS cluster and can be used for node groups, networking, or load balancers.
 }
