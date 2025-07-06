@@ -19,7 +19,7 @@ env:
  # S3 bucket for the Terraform state
  BUCKET_TF_STATE: ${{ secrets.BUCKET_TF_STATE }}
  AWS_REGION: us-east-1
- EKS_CLUSTER: matty-eks
+ EKS_CLUSTER: vprofile-eks
 
 jobs:
    terraform:
@@ -82,3 +82,5 @@ jobs:
          if: steps.apply.outcome == 'success' && steps.getconfig.outcome == 'success'
          run:
            kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/aws/deploy.yaml
+##
+##
